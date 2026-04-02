@@ -1,33 +1,15 @@
 import express, { NextFunction, Request, Response } from 'express'
 import cors from 'cors'
+import { StudentRoute } from './app/modules/student/student.route.js'
 const app = express()
 
 // Middleware 
 app.use(express.json())
 app.use(cors())
 
-const userRouter = express.Router()
-app.use('/api/users', userRouter)
+//application routes
+app.use('/api/v1/students', StudentRoute)
 
-
-
-// Routes
-userRouter.get('/:userId/:name', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        res.status(200).json(
-        {
-            'success': true,
-            'message': 'Welcome to the API',
-            'params': req.params
-
-        })
-        // res.send(abc);
-
-    } catch (error) {
-        console.error('Error in user route:', error);
-        next(error); // Pass the error to the global error handler
-    }
-})
 
 
 // 404 handler for undefined routes

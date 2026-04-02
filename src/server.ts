@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 
 // Connect to MongoDB
 async function connectToDatabase() {
-   
+
 
     try {
         await mongoose.connect(config.MONGO_URI)
@@ -17,7 +17,7 @@ async function connectToDatabase() {
 // Start the server
 async function startServer() {
     try {
-        app.listen(config.PORT, () => { 
+        app.listen(config.PORT, () => {
             console.log(`Server is running on port ${config.PORT}`)
         })
     } catch (error) {
