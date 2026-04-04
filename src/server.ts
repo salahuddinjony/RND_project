@@ -1,13 +1,13 @@
 import config from './app/config/index.js'
 import app from './app.js'
-import mongoose from 'mongoose'
+import { connectToDatabase } from './app/db.js'
 
 // Connect to MongoDB
-async function connectToDatabase() {
+async function initializeDatabase() {
 
 
     try {
-        await mongoose.connect(config.MONGO_URI)
+        await connectToDatabase()
         console.log('Connected to MongoDB')
     } catch (error) {
         console.error('Error connecting to MongoDB:', error)
@@ -28,7 +28,7 @@ async function startServer() {
 // Main function to connect to database and start the server
 async function main() {
     try {
-        await connectToDatabase()
+        await initializeDatabase()
         await startServer()
     } catch (error) {
         console.error('Application startup failed:', error)
