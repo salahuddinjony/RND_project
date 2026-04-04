@@ -10,6 +10,21 @@ app.use(cors())
 //application routes
 app.use('/api/v1/students', StudentRoute)
 
+// Root route-test
+app.get('/', (req: Request, res: Response) => {
+    try {
+        res.status(200).json({
+            success: true,
+            message: 'Welcome to the Student Management System API' 
+        })
+    } catch (error) {
+        console.error('Error in root route:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error'
+        })
+    }
+})
 
 
 // 404 handler for undefined routes

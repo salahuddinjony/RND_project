@@ -19,26 +19,28 @@ export type localGuardian = {
 
 export type userName = {
     firstName: string;
-    middleName: string;
+    middleName?: string | undefined;
     lastName: string;
 
 }
+// main student interface
 export type Student = {
     id: string;
+    password: string;
     name: userName;
     gender: "male" | "female" | "other";
     dateOfBirth: string;
     email: string;
     contactNo: string;
     emergencyContactNo: string;
-    bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+    bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | undefined;
     presentAddress: string;
     permanentAddress: string;
     guardian: guradian,
     localGuardian: localGuardian,
-    profileImage?: string;
+    profileImage?: string | undefined;
     isActive: 'active' | 'inactive';
+    isDeleted?: boolean;
 
 }
-
 
