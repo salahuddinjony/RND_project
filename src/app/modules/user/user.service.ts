@@ -1,12 +1,33 @@
+import { object } from 'joi'
+import config from '../../config/index.js'
+import { Student } from '../student/student.interface.js'
+import { StudentModel } from '../student/student.model.js'
 import { User } from './user.interface.js'
+
 import { UserModel } from './user.model.js'
 import { UpdateQuery } from 'mongoose'
 
 // Service function to create a user in the database
-const createUserIntoDB = async (userData: User) => {
+const createStudentIntoDB = async (password: string, StudentData: Student) => {
     // Simulating saving the user data to the database
-    const result = await UserModel.create(userData)
-    return result
+    const userData: Partial<User> = {}
+    userData.password = password ?? config.DEFAULT_USER_PASSWORD
+    userData.role = 'student'
+
+    //set id 
+    userData.id = "121212";
+    // Create a new user document in the database with the provided password and role
+    const createNewUser = await UserModel.create(userData) // Create a new user document in the database with the provided password and role
+
+    // After creating the user, we can proceed to create the student document and associate it with the created user
+    if (Object.keys(createNewUser.toObject()).length) { // Check if the created user object has any keys, which indicates that the user was successfully created
+
+        StudentData.id = createNewUser.id // Assuming the student's ID is the same as the user's ID, we set the student's ID to the created user's ID
+        StudentData.user = createNewUser._id // We also set the userId field in the student data to the ObjectId of the created user document, establishing a reference between the student and the user;
+        const createNewStudent = await StudentModel.create(StudentData) // Create a new student document in the database with the provided student data
+        return createNewStudent // Return the created student document
+    }
+
 }
 // Service function to get all users from the database
 const getAllUsersFromDB = async () => {
@@ -35,7 +56,7 @@ const deleteUserFromDB = async (id: string) => {
     return deletedUser // This will return the deleted user document if it was found and deleted, or null if no document with the specified ID was found
 }
 export const UserService = {
-    createUserIntoDB,
+    createStudentIntoDB,
     getAllUsersFromDB,
     getUserByIdFromDB,
     updateUserInfoInDB,

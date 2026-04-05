@@ -5,7 +5,7 @@ const router = express.Router()
 // Define your student routes here
 
 // Route for creating a student
-router.post('/create-student', StudentController.createStudent)
+// router.post('/create-student', StudentController.createStudent)
 
 
 // Get all students

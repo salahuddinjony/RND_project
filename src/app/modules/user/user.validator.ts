@@ -1,22 +1,19 @@
+import { error } from 'console';
+import { invalid } from 'joi';
 import zod from 'zod';
 
 
 const createUserValidationSchema = zod.object({
-    id: zod.number({ message: 'ID must be a number' }),
-    password: zod.string().min(6, 'Password must be at least 6 characters long'),
-    needsPasswordReset: zod.boolean().optional().default(true),
-    role: zod.enum(['admin', 'user', 'faculty'] as const, {
-        message: "Role must be one of 'admin', 'user', or 'faculty'",
-    }),
-    isDeleted: zod.boolean().optional().default(false),
-    status: zod.enum(['in-progress', 'active', 'inactive', 'pending', 'blocked']).optional().default('pending'),
+    password: zod.string().min(6, 'Password must be at least 6 characters long')
 });
 
 const updateUserValidationSchema = zod.object({
-    password: zod.string().min(6, 'Password must be at least 6 characters long').optional(),
+    password: zod.string(
+        { message: 'Password must be a string' }
+    ).min(6, 'Password must be at least 6 characters long').optional(),
     needsPasswordReset: zod.boolean().optional(),
-    role: zod.enum(['admin', 'user', 'faculty'] as const, {
-        message: "Role must be one of 'admin', 'user', or 'faculty'",
+    role: zod.enum(['admin', 'student', 'faculty'] as const, {
+        message: "Role must be one of 'admin', 'student', or 'faculty'",
     }).optional(),
     isDeleted: zod.boolean().optional(),
     status: zod.enum(['in-progress', 'active', 'inactive', 'pending', 'blocked']).optional(),

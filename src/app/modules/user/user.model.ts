@@ -6,13 +6,13 @@ import config from '../../config/index.js';
 
 export const userSchema = new Schema<User>({
     id: {
-        type: Number,
-        required: true,
+        type: String,
+        // required: true,
         unique: true,
     },
     password: {
         type: String,
-        required: true,
+        // required: true,
         select: false, // This option ensures that the password field is not included in query results by default, enhancing security by preventing accidental exposure of hashed passwords in API responses or logs.
     },
     needsPasswordReset: {
@@ -22,11 +22,11 @@ export const userSchema = new Schema<User>({
     role: {
         type: String,
         enum: {
-            values: ['admin', 'user', 'faculty'],
-            message: 'Role must be one of admin, user, or faculty'
+            values: ['admin', 'student', 'faculty'],
+            message: 'Role must be one of admin, student, or faculty'
 
         },
-        required: true,
+     
     },
     isDeleted: {
         type: Boolean,
@@ -38,7 +38,7 @@ export const userSchema = new Schema<User>({
             values: ['in-progress', 'active', 'inactive', 'pending', 'blocked'],
             message: 'Status must be one of in-progress, active, inactive, pending, or blocked',
         },
-        default: 'pending',
+        default: 'in-progress',
     }
 }, {
     timestamps: true
@@ -56,10 +56,9 @@ userSchema.pre('save', async function () {
 })
 
 //post hook for save method, this will run after saving data to the database, we can use this to perform any necessary operations or actions after the data has been saved. In this case, it simply logs the document that was saved and a message indicating that the hook has completed.
-userSchema.post('save', function (doc, next) {
+userSchema.post('save', function (doc) {
     // console.log(this, 'Hook after saving data');
-    (doc as any).password = undefined // This will remove the password field from the document before it is sent back in the response, ensuring that the hashed password is not exposed in any API responses or logs.
-    next() // Call the next middleware function in the stack, if there are any. This is important to ensure that the request continues to be processed after the hook has completed its operations.
+    // (doc as any).password = undefined // This will remove the password field from the document before it is sent back in the response, ensuring that the hashed password is not exposed in any API responses or logs.
 })
 
 // 
