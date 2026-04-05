@@ -3,12 +3,12 @@ import { Student } from "./student.interface.js"
 import { StudentModel } from "./student.model.js"
 
 
-// Service function to create a student in the database
-const createStudentIntoDB = async (studentData: Student) => {
-    // Simulating saving the student data to the database
-    const result = await StudentModel.create(studentData)
-    return result // Simulating a successful database save operation
-}
+// // Service function to create a student in the database
+// const createStudentIntoDB = async (studentData: Student) => {
+//     // Simulating saving the student data to the database
+//     const result = await StudentModel.create(studentData)
+//     return result // Simulating a successful database save operation
+// }
 
 // Service function to get all students from the database
 const getAllStudentsFromDB = async () => {
@@ -43,7 +43,7 @@ const deleteStudentFromDB = async (id: string) => {
     return deletedStudent // This will return the deleted student document if it was found and deleted, or null if no document with the specified ID was found
 }
 export const StudentService = {
-    createStudentIntoDB,
+    // createStudentIntoDB,
     getAllStudentsFromDB,
     getStudentByIdFromDB,
     updateStudentInfoInDB,

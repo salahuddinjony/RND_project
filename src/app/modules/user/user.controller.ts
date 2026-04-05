@@ -1,22 +1,24 @@
 import { NextFunction, Request, Response } from 'express'
 import { UserService } from './user.service.js'
 import { zodValidateUserCreate, zodValidateUserUpdate } from './user.validator.js'
+import { Student } from '../student/student.interface.js'
+import { zodValidateStudent } from '../student/student.validation.js'
 
-const createUser = async (req: Request, res: Response, next: NextFunction) => {
+const createStudent = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userData = req.body // Get user data from the request body
-        if (!userData || typeof userData !== 'object') {
+        const {password, student: studentData} = req.body // Get user data from the request body
+        if (!studentData || typeof studentData !== 'object') {
             res.status(400).json({
                 success: false,
-                message: 'User payload is required'
+                message: 'Student payload is required'
             })
             return
         }
         // ZOD validation (kept as comment by request): 
-        const zodValidationResult = zodValidateUserCreate(userData)
+        const zodValidationResult = zodValidateStudent(studentData)
 
         // Call the service function to create the user in the database
-        const result = await UserService.createUserIntoDB(zodValidationResult)
+        const result = await UserService.createStudentIntoDB(password, zodValidationResult as any)
 
         if (result) { // Check if result is not null or undefined
             res.status(201).json({
@@ -149,7 +151,7 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 export const UserController = {
-    createUser,
+    createStudent,
     getAllUsers,
     getUserById,
     updateUserInfo,

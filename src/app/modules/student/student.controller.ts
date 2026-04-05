@@ -10,60 +10,60 @@ const getSanitizedStudentId = (id: string) => id.trim()
 // Utility function to check if a student ID is a valid MongoDB ObjectId
 const isValidStudentId = (id: string) => Types.ObjectId.isValid(id)
 
-// Controller function to create a student-POST
-const createStudent = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        // Extract student data from the request body
-        const studentData = req.body?.student ?? req.body
-        if (!studentData || typeof studentData !== 'object') {
-            res.status(400).json({
-                success: false,
-                message: 'Student payload is required'
-            })
-            return
-        }
+// // Controller function to create a student-POST
+// const createStudent = async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         // Extract student data from the request body
+//         const studentData = req.body?.student ?? req.body
+//         if (!studentData || typeof studentData !== 'object') {
+//             res.status(400).json({
+//                 success: false,
+//                 message: 'Student payload is required'
+//             })
+//             return
+//         }
 
-        // Joi validation throws on invalid payload and returns sanitized value on success.
+//         // Joi validation throws on invalid payload and returns sanitized value on success.
 
-        // const validatedStudentData = validateStudent(studentData)
-        // console.log('Received student data:', studentData) // Log the received data for debugging
+//         // const validatedStudentData = validateStudent(studentData)
+//         // console.log('Received student data:', studentData) // Log the received data for debugging
 
-          // Joi validation (kept as comment by request):
-        // const joiValidationResult = validateStudent(studentData)
+//           // Joi validation (kept as comment by request):
+//         // const joiValidationResult = validateStudent(studentData)
 
-        // Data validation using ZOD
-        const zodValidationResult = zodValidateStudent(studentData)
+//         // Data validation using ZOD
+//         const zodValidationResult = zodValidateStudent(studentData)
       
 
 
-        // Call the service function to create a student in the database
-        const result = await StudentService.createStudentIntoDB(zodValidationResult) // Pass the validated student data to the service function
-        if (result) { // Check if result is not null or undefined
-            res.status(201).json({
-                success: true,
-                message: 'Student created successfully',
-                data: result
-            })
-        } else {
-            res.status(404).json({
-                success: false,
-                message: 'Failed to create student'
-            })
-        }
+//         // Call the service function to create a student in the database
+//         const result = await StudentService.createStudentIntoDB(zodValidationResult) // Pass the validated student data to the service function
+//         if (result) { // Check if result is not null or undefined
+//             res.status(201).json({
+//                 success: true,
+//                 message: 'Student created successfully',
+//                 data: result
+//             })
+//         } else {
+//             res.status(404).json({
+//                 success: false,
+//                 message: 'Failed to create student'
+//             })
+//         }
 
-    } catch (error) {
-        console.error('Error creating student:', error)
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-        const statusCode = errorMessage.includes('Validation error') ? 400 : 500
+//     } catch (error) {
+//         console.error('Error creating student:', error)
+//         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+//         const statusCode = errorMessage.includes('Validation error') ? 400 : 500
 
-        res.status(statusCode).json({
-            success: false,
-            message: 'Failed to create student',
-            error: errorMessage
-        })
-    }
+//         res.status(statusCode).json({
+//             success: false,
+//             message: 'Failed to create student',
+//             error: errorMessage
+//         })
+//     }
 
-}
+// }
 
 // Get all students-GET
 const getAllStudents = async (req: Request, res: Response, next: NextFunction) => {
@@ -199,7 +199,7 @@ const deleteStudent = async (req: Request, res: Response, next: NextFunction) =>
 
 }
 export const StudentController = {
-    createStudent,
+    // createStudent,
     getAllStudents,
     getStudentById,
     updateStudentInfo,

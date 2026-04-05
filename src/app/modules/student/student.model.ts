@@ -74,7 +74,12 @@ export const localGuardianSchema = new Schema<localGuardian>({
 // Main Student Schema
 const studentSchema = new Schema<Student>({
     id: { type: String, required: [true, 'Student ID is required'], unique: [true, 'Student ID must be unique'] },
-    password: { type: String, select: false, required: [true, 'Password is required'], minlength: [6, 'Password must be at least 6 characters long'] },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'Associated user is required'],
+        unique: [true, 'User ID must be unique']
+    }, // This field will store the ObjectId of the associated user document in the database, allowing us to establish a relationship between the student and the user.
     name: {
         type: userNameSchema,
         trim: true,
@@ -146,13 +151,8 @@ const studentSchema = new Schema<Student>({
         required: [true, 'Local guardian information is required']
     },
     profileImage: { type: String },
-    isActive: {
-        type: String, enum: {
-            values: ['active', 'inactive'],
-            message: "Active status must be either 'active' or 'inactive'"
-        }, required: [true, 'Active status is required'], default: 'active'
-    },
-    isDeleted: { type: Boolean, default: false ,select: false} // This field will be used to mark a student as deleted without actually removing the document from the database, which allows for soft deletion and easier data recovery if needed.
+   
+    isDeleted: { type: Boolean, default: false, select: false } // This field will be used to mark a student as deleted without actually removing the document from the database, which allows for soft deletion and easier data recovery if needed.
 }, {
     timestamps: true, // This will automatically add createdAt and updatedAt fields to the schema
     toJSON: { // This will ensure that virtuals are included when converting documents to JSON
@@ -170,12 +170,6 @@ studentSchema.virtual('fullName').get(function (this: any) {
 //pre hook for save method, this will run before saving data to the database, we can use this to perform any necessary operations or validations before the data is actually saved. In this case, it simply logs the document being saved and a message indicating that the hook is running.
 studentSchema.pre('save', async function () {
 
-    //hash password before saving to database
-    if (this.isModified('password')) { // Check if the password field has been modified (either during creation or update)
-        const saltRounds = Number(config.BCRYPT_SALT_ROUNDS); // Get the number of salt rounds from the configuration, which determines how many times the password will be hashed. A higher number means more security but also more time to hash the password.
-        const hashedPassword = await bcrypt.hash(this.password, saltRounds); // Hash the password using bcrypt
-        this.password = hashedPassword; // Replace the plain text password with the hashed version before saving to the database
-    }
 
     // console.log(this, 'Hook before saving data') 
 })

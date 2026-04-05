@@ -1,4 +1,4 @@
-import { Schema, model, connect } from 'mongoose';
+import { Schema, model, connect, Types } from 'mongoose';
 
 // Define the Student interface using type alias , also can use interface
 
@@ -26,7 +26,7 @@ export type userName = {
 // main student interface
 export type Student = {
     id: string;
-    password: string;
+    user: Types.ObjectId; // Reference to the User document, this will store the ObjectId of the associated user document in the database, allowing us to establish a relationship between the student and the user.
     name: userName;
     gender: "male" | "female" | "other";
     dateOfBirth: string;
@@ -39,7 +39,6 @@ export type Student = {
     guardian: guradian,
     localGuardian: localGuardian,
     profileImage?: string | undefined;
-    isActive: 'active' | 'inactive';
     isDeleted?: boolean;
 
 }

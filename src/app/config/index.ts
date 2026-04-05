@@ -11,4 +11,5 @@ export default {
     PORT: process.env.PORT || 3000,
     MONGO_URI: process.env.MONGO_URI as string || '',
     BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS ? parseInt(process.env.BCRYPT_SALT_ROUNDS) : 10, // Default to 10 if not set
+    DEFAULT_USER_PASSWORD: process.env.DEFAULT_USER_PASSWORD as string || '123456'// Default password if not set
 }
