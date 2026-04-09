@@ -29,7 +29,11 @@ const updateAcademicDeptInfoInDB = async (id: string, updatedData: Partial<Omit<
 
 // delete department from database
 const deleteAcademicDeptFromDB = async (id: string) => {
-    const deletedAcademicDept = await AcademicDeptModel.findByIdAndUpdate(id, { isDeleted: true }, { returnDocument: 'after' }).populate('academicFaculty');
+    //check if the department is already deleted, if not then delete it and also delete all students associated with this department by marking them as deleted
+    const deletedAcademicDept = await AcademicDeptModel.findByIdAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true }, { returnDocument: 'after' }).populate('academicFaculty');
+    if (!deletedAcademicDept) {
+        return null; // No department found with the specified ID or it is already deleted
+    }
     return deletedAcademicDept; // This will return the deleted department document if it was found and deleted, or null if no document with the specified ID was found
 }
 export const AcademicDeptService = {

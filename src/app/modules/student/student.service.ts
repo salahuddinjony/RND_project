@@ -17,14 +17,20 @@ const getAllStudentsFromDB = async () => {
     // Simulating fetching all students from the database
     const result = await StudentModel.find({ isDeleted: false })
     // const result = await StudentModel.find().populate('user').populate('admissionSemester')
-    return result
+    return {
+        count: result.length,
+        students: result
+    }
 }
 //   function to get all deleted students from the database
 const getAllDeletedStudentsFromDB = async () => {
     // Simulating fetching all deleted students from the database
     const result = await StudentModel.find({ isDeleted: true })
     // const result = await StudentModel.find().populate('user').populate('admissionSemester')
-    return result
+    return {
+        count: result.length,
+        students: result
+    }
 }
 
 // Service function to get a student by ID from the database
@@ -49,46 +55,83 @@ const updateStudentInfoInDB = async (id: string, updatedData: Partial<Omit<Stude
 
 // delete student from database
 const deleteStudentFromDB = async (id: string) => {
-    const deletedStudent = await StudentModel.findByIdAndUpdate(id, { isDeleted: true }, { returnDocument: 'after' })
-    if (deletedStudent) {
-        await UserModel.findOneAndUpdate({ _id: deletedStudent.user }, { isDeleted: true }) // This will find the user document associated with the deleted student and mark it as deleted by setting the isDeleted field to true, ensuring that both the student and the associated user record are marked as deleted in the database.
-    }
-    return deletedStudent // This will return the deleted student document if it was found and deleted, or null if no document with the specified ID was found
-}
 
-// Restore all deletesd students from the database if admissionSemester is restored
+    // Update only if not already deleted
+    const deletedStudent = await StudentModel.findOneAndUpdate(
+        { _id: id, isDeleted: false }, // Ensure we only delete if the student is not already marked as deleted
+        { isDeleted: true },
+        { returnDocument: 'after' }
+    );
+
+    // Not found or already deleted
+    if (!deletedStudent) {
+        return null;
+    }
+
+    // Soft delete related user also by setting isDeleted to true
+    await UserModel.findByIdAndUpdate(
+        deletedStudent.user,
+        { isDeleted: true }
+    );
+
+    return deletedStudent;
+};
+
+// Restore all deleted students from the database if admissionSemester is restored
 const restoreDeletedStudentsInDB = async () => {
 
-    // 1. Get deleted students' semesters
-    const deletedStudents = await StudentModel.find(
-        { isDeleted: true },
-        { admissionSemester: 1, _id: 0 }
-    ).lean();
 
-    const semesterIds = [
-        ...new Set(deletedStudents.map(s => s.admissionSemester.toString()))
-    ];
+    // 1. Get unique semester IDs directly (optimized)
+    const semesterIds = await StudentModel.distinct('admissionSemester', {
+        isDeleted: true
+    });
 
-    // 2. Find restored semesters that match the deleted students' semesters
+    // No deleted students
+    if (semesterIds.length === 0) {
+        return {
+            count: 0,
+            students: [],
+            message: 'There are no deleted students to restore'
+        };
+    }
+
+    // 2. Find only restored semesters
     const restoredSemesters = await AcademicSemesterModel.find({
         _id: { $in: semesterIds },
         isDeleted: false
-    });
+    }).select('_id'); // Only select the _id field to minimize data transfer
 
     const validSemesterIds = restoredSemesters.map(s => s._id);
+    if (validSemesterIds.length === 0) {
+        return {
+            count: 0,
+            students: [],
+            message: 'No deleted students can be restored because their admission semesters are still deleted'
+        };
+    }
 
-    // 3. Restore students
-    const result = await StudentModel.updateMany(
+    // 3. Restore students with valid admission semesters
+    await StudentModel.updateMany(
         {
             isDeleted: true,
             admissionSemester: { $in: validSemesterIds }
         },
         {
             isDeleted: false
-        }
-    );
+        },
 
-    return result;
+    )
+    const result = await StudentModel.find({
+        isDeleted: false,
+        admissionSemester: { $in: validSemesterIds }
+    }).select('name email admissionSemester');
+
+
+    return {
+        count: result.length,
+        students: result,
+        message: 'Deleted students restored successfully'
+    };
 };
 export const StudentService = {
     // createStudentIntoDB,

@@ -36,11 +36,14 @@ const updateSemesterInfoInDB = async (id: string, updatedData: Partial<Omit<Acad
 
 // delete semester from database
 const deleteSemesterFromDB = async (id: string) => {
-    const deletedSemester = await AcademicSemesterModel.findByIdAndUpdate(id, { isDeleted: true }, { returnDocument: 'after' });
+    //check if the semester is already deleted, if not then delete it and also delete all students associated with this semester by marking them as deleted
+    const deletedSemester = await AcademicSemesterModel.findByIdAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true }, { returnDocument: 'after' });
     // Also delete all students associated with this semester by marking them as deleted
-    if (deletedSemester) {
-        await model('Student').updateMany({ admissionSemester: id }, { isDeleted: true })
+    if (!deletedSemester) {
+        return null; // No semester found with the specified ID or it is already deleted
     }
+    await model('Student').updateMany({ admissionSemester: id }, { isDeleted: true })
+
     return deletedSemester; // This will return the deleted semester document if it was found and deleted, or null if no document with the specified ID was found
 }
 // Restore all deleted semesters from the database
@@ -54,7 +57,7 @@ const restoreDeletedSemestersInDB = async () => {
 
 //Restore a single deleted semester by ID
 const restoreDeletedSemesterByIdInDB = async (id: string) => {
-    const restoredSemester = await AcademicSemesterModel.findByIdAndUpdate( id, { isDeleted: false }, { returnDocument: 'after' } );
+    const restoredSemester = await AcademicSemesterModel.findByIdAndUpdate(id, { isDeleted: false }, { returnDocument: 'after' });
     return restoredSemester; // This will return the restored semester document if it was found and restored, or null if no document with the specified ID was found
 }
 
@@ -65,6 +68,6 @@ export const AcademicSemesterService = {
     getSemesterByIdFromDB,
     updateSemesterInfoInDB,
     deleteSemesterFromDB,
-    restoreDeletedSemestersInDB, 
+    restoreDeletedSemestersInDB,
     restoreDeletedSemesterByIdInDB
 }

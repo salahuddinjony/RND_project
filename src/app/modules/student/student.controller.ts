@@ -95,19 +95,25 @@ const deleteStudent = catchAsync(async (req: Request, res: Response, next: NextF
 })
 
 // Restore deleted students if their admission semester is restored
-const restoreDeletedStudents = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await StudentService.restoreDeletedStudentsInDB()
-    if (result) {
+const restoreDeletedStudents = catchAsync(async (req: Request, res: Response) => {
+    const result = await StudentService.restoreDeletedStudentsInDB();
+    if(result.count > 0) {
         sendResponse(res, {
             statusCode: 200,
             success: true,
-            message: 'Deleted students restored successfully',
-            data: result
+            message: result.message,
+            data: result.students
         })
     } else {
-        next(new AppError('Failed to restore deleted students', 404)) // Pass an error to the global error handler
+        sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: result.message,  
+            
+        })
     }
-})
+
+});
 export const StudentController = {
     // createStudent,
     getAllStudents,
@@ -116,6 +122,4 @@ export const StudentController = {
     updateStudentInfo,
     deleteStudent,
     restoreDeletedStudents
-
-
 }

@@ -30,14 +30,16 @@ const updateAcademicFacultyInfoInDB = async (id: string, updatedData: Partial<Om
 
 // delete faculty from database
 const deleteAcademicFacultyFromDB = async (id: string) => {
-    const deletedFaculty = await AcademicFacultyModel.findByIdAndUpdate(id, { isDeleted: true }, { returnDocument: 'after' });
-    if (deletedFaculty) {
-        //also mark all departments under this faculty as deleted
-        // await model('AcademicDept').updateMany({ academicFaculty: id }, { isDeleted: true })
-
-        //also can use model name to update many departments under this faculty as deleted
-        await AcademicDeptModel.updateMany({ academicFaculty: id }, { isDeleted: true })
+    const deletedFaculty = await AcademicFacultyModel.findByIdAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true }, { returnDocument: 'after' });
+    if (!deletedFaculty) {
+        return null; // No faculty found with the specified ID or it is already deleted
     }
+    //also mark all departments under this faculty as deleted
+    // await model('AcademicDept').updateMany({ academicFaculty: id }, { isDeleted: true })
+
+    //also can use model name to update many departments under this faculty as deleted
+    await AcademicDeptModel.updateMany({ academicFaculty: id }, { isDeleted: true })
+
     return deletedFaculty; // This will return the deleted faculty document if it was found and deleted, or null if no document with the specified ID was found
 }
 export const AcademicFacultyService = {
