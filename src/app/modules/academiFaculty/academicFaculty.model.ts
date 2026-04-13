@@ -1,6 +1,11 @@
 import { Schema, model } from 'mongoose'
 import { AcademicFaculty } from './academicFaculty.interface.js'
 const academicFaultySchema = new Schema<AcademicFaculty>({
+    facultyId: {
+        type: String,
+        required: [true, 'Academic faculty id is required'],
+        unique: [true, 'Academic faculty id must be unique']
+    },
     name: {
         type: String,
         required: [true, 'Academic faculty name is required'],
@@ -18,7 +23,7 @@ academicFaultySchema.pre('findOneAndUpdate', function () {
 
     const update = this.getUpdate() as any;
 
-    const restrictedFields = ['isDeleted'];
+    const restrictedFields = ['isDeleted', 'facultyId'];
 
     for (const field of restrictedFields) {
 
