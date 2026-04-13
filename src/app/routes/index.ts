@@ -4,6 +4,7 @@ import { StudentRoute } from '../modules/student/student.route.js'
 import { AcademicSemesterRoute } from '../modules/academicSemester/academicSemester.route.js'
 import { AcademicFacultyRoute } from '../modules/academiFaculty/academicFaculty.route.js'
 import { AcademicDeptRoute } from '../modules/academicDept/academicDept.route.js'
+import { promise } from 'zod'
 const router = express.Router()
 
 const moduleRoutes = [
@@ -19,5 +20,6 @@ for (const moduleRoute of moduleRoutes) {
     router.use(moduleRoute.path, moduleRoute.route)
 }
 
-
+// Promise.reject()
 export default router
+

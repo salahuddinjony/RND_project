@@ -90,13 +90,21 @@ export const studentValidationSchema = z.object({
 });
 
 // For update, all fields are optional
-const updateStudentValidationSchema = z.object({
-    student: studentValidationSchema.partial().extend({
-        name: userNameValidationSchema.partial().optional(),
-        guardian: guardianValidationSchema.partial().optional(),
-        localGuardian: localGuardianValidationSchema.partial().optional(),
+const updateStudentValidationSchema = z
+    .object({
+        student: studentValidationSchema
+            .partial()
+            .extend({
+                name: userNameValidationSchema.partial().strict().optional(),
+                guardian: guardianValidationSchema.partial().strict().optional(),
+                localGuardian: localGuardianValidationSchema.partial().strict().optional(),
+            })
+            .strict()
+            .refine((data) => Object.keys(data).length > 0, {
+                message: 'Provide at least one valid student field to update',
+            }),
     })
-});
+    .strict();
 export const studentValidation = {
     studentValidationSchema,
     updateStudentValidationSchema

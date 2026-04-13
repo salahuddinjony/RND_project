@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { UserService } from './user.service.js'
-import AppError from '../../errors/AppError.js'
+import AppError from '../../errors/handleAppError.js'
 import sendResponse from '../../utils/response/responseSend.js'
 import catchAsync from '../../utils/CatchAsync.js'
 import { checkCommonValidation } from '../../utils/checkCommonValidation.js'
@@ -31,7 +31,8 @@ const createStudent = catchAsync(async (req: Request, res: Response, next: NextF
 
 // get all users-GET
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserService.getAllUsersFromDB()
+    const query = req.query
+    const result = await UserService.getAllUsersFromDB(query)
     if (result) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,
