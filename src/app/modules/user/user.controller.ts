@@ -15,7 +15,7 @@ const createStudent = catchAsync(async (req: Request, res: Response, next: NextF
     // const zodValidationResult = zodValidateStudent(studentData)
 
     // Call the service function to create the user in the database
-    const result = await UserService.createStudentIntoDB(password, studentData, next)
+    const result = await UserService.createStudentIntoDB(password, studentData)
 
     if (result) { // Check if result is not null or undefined
         sendResponse(res, {
@@ -100,22 +100,22 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 // get all deleted users-GET
 const getAllDeletedUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const result = await UserService.getAllDeletedUsersFromDB()
-    if (result.count!=0) { // Check if result is not null or undefined
+    if (result.count != 0) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,
             success: true,
             message: result.message,
             data: result
         })
-    } 
-    else if(result.count === 0) {
+    }
+    else if (result.count === 0) {
         sendResponse(res, {
             statusCode: 200,
             success: true,
             message: result.message
-           
+
         })
-    }else {
+    } else {
         next(new AppError('Failed to retrieve deleted users', 404))
     }
 })
@@ -123,22 +123,22 @@ const getAllDeletedUsers = catchAsync(async (req: Request, res: Response, next: 
 // Restore all deleted users-POST
 const restoreDeletedUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const result = await UserService.restoreDeletedUsersInDB()
-    if (result.count!=0) { // Check if result is not null or undefined
+    if (result.count != 0) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,
             success: true,
             message: 'Deleted users restored successfully',
             data: result.message
         })
-    } 
+    }
     else if (result.count === 0) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,
             success: true,
-            message:result.message,
-           
+            message: result.message,
+
         })
-    } 
+    }
     else {
         next(new AppError('Failed to restore deleted users', 404))
     }

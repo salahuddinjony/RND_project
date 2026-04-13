@@ -7,30 +7,62 @@ import mongoose, { UpdateQuery } from "mongoose";
 import AppError from "../../errors/handleAppError.js";
 import { UserUtils } from "./user.utils.js";
 import { paginate, parseListQuery } from "../../builder/queryBuilder.js";
-
+import { AcademicSemesterModel } from "../academicSemester/academicSemester.model.js";
+import AcademicDeptModel from "../academicDept/academicDept.model.js";
+import { startSession } from "mongoose";
 // Service function to create a user in the database
-const createStudentIntoDB = async (
-  password: string,
-  StudentData: Student,
-  next: Function,
-) => {
+const createStudentIntoDB = async (password: string, StudentData: Student) => {
   // Simulating saving the user data to the database
   const userData: Partial<User> = {};
   userData.password = password ?? config.DEFAULT_USER_PASSWORD;
   userData.role = "student";
-  try {
-    userData.id = await UserUtils.generatedIStudentd(
-      StudentData.admissionSemester.toString(),
-    );
-  } catch (error) {
-    next(new AppError("Failed to generate student ID", 500));
-    return;
-  }
   // Use a session to ensure that both user and student creation are atomic operations. If either operation fails, the transaction will be rolled back, preventing partial data from being saved to the database.
-  const session = await mongoose.startSession();
+  const session = await startSession();
   try {
     // Start a transaction to ensure atomicity of user and student creation. This means that if any part of the process fails (either creating the user or the student), the entire transaction will be rolled back, ensuring data integrity and preventing partial records from being saved to the database.
     session.startTransaction();
+
+    const admissionSemesterId = StudentData.admissionSemester.toString();
+    if (!admissionSemesterId) {
+      throw new AppError("Admission semester is required", 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(admissionSemesterId)) {
+      await session.abortTransaction();
+      throw new AppError("Invalid admission semester id", 400);
+    }
+    //check if the admission semester is deleted
+    const admissionSemester = await AcademicSemesterModel.findOne({
+      _id: admissionSemesterId,
+      isDeleted: false,
+    }).session(session);
+    if (!admissionSemester) {
+      await session.abortTransaction();
+      throw new AppError("Admission semester is deleted", 400);
+    }
+    //academicDept
+    const academiDeptId = StudentData.academicDept.toString();
+    if (!academiDeptId) {
+      await session.abortTransaction();
+      throw new AppError("Academic department is required", 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(academiDeptId)) {
+      await session.abortTransaction();
+      throw new AppError("Invalid academic department id", 400);
+    }
+    //check if the academic department is deleted
+    const academicDept = await AcademicDeptModel.findOne({
+      _id: academiDeptId,
+      isDeleted: false,
+    }).session(session);
+    if (!academicDept) {
+      await session.abortTransaction();
+      throw new AppError("Academic department is deleted", 400);
+    }
+ // Generate a unique student ID using the UserUtils.generatedStudentId function, which takes the admission semester ID and the session as parameters. This function will generate a unique student ID based on the admission semester and ensure that it is done within the same transaction to maintain data integrity.
+    userData.id = await UserUtils.generatedStudentId(
+      admissionSemesterId,
+      session,
+    );
 
     // Keep user and student creation atomic to avoid partial records.
     const [createNewUser] = await UserModel.create([userData], { session });
@@ -46,6 +78,9 @@ const createStudentIntoDB = async (
     return createNewStudent;
   } catch (error) {
     await session.abortTransaction();
+    if (error instanceof AppError) {
+      throw error;
+    }
     throw new AppError("Failed to create student user", 500);
   } finally {
     await session.endSession();

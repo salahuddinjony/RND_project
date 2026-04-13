@@ -5,11 +5,50 @@ import mongoose from "mongoose";
 import AppError from "../../errors/handleAppError.js";
 import { StudentModel } from "../student/student.model.js";
 import { paginate, parseListQuery } from "../../builder/queryBuilder.js";
+import { CounterService } from "../counter/counter.service.js";
 
 // Service function to create a new academic faculty
 const createAcademicFacultyIntoDB = async (facultyData: AcademicFaculty) => {
-  const faculty = await AcademicFacultyModel.create(facultyData);
-  return faculty;
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const startFacultyId = "F-";
+
+    const facultyIdCounter = await CounterService.createOrFindCounterIntoDB(
+      startFacultyId,
+      "academicFaculty",
+      session,
+    );
+
+    if (!facultyIdCounter) {
+      await session.abortTransaction();
+      throw new AppError("Failed to generate academic faculty id", 500);
+    }
+
+    const facultyId = `${startFacultyId}${facultyIdCounter.sequenceValue
+      .toString()
+      .padStart(4, "0")}`;
+
+    facultyData.facultyId = facultyId;
+    const [faculty] = await AcademicFacultyModel.create([facultyData], {
+      session,
+    });
+
+    await session.commitTransaction();
+
+    return faculty;
+  } catch (error: any) {
+    await session.abortTransaction();
+
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError("Failed to create academic faculty", 500);
+  } finally {
+    await session.endSession();
+  }
 };
 
 // Service function to get all academic faculties
