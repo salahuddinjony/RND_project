@@ -1,4 +1,4 @@
-import AppError from '../../errors/AppError.js';
+import AppError from '../../errors/handleAppError.js';
 import { monthEnum, semesterCodeEnum, semesterNameEnum } from './academicSemester.constant.js';
 import { AcademicSemester } from './academicSemester.interface.js';
 import { Schema, model } from 'mongoose';

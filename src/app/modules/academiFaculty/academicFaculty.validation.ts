@@ -6,7 +6,9 @@ const academicFacultyValidationSchema = z.object({
 });
 
 // For update, all fields are optional
-const updateAcademicFacultyValidationSchema = academicFacultyValidationSchema.partial();  // This allows for partial updates, meaning that when updating an academic faculty, you can provide any subset of the fields defined in the original validation schema, making it flexible for different update scenarios.
+const updateAcademicFacultyValidationSchema = academicFacultyValidationSchema.partial().strict().refine((data) => Object.keys(data).length > 0, {
+    message: 'Provide at least one valid field to update',
+});  // This allows for partial updates, meaning that when updating an academic faculty, you can provide any subset of the fields defined in the original validation schema, making it flexible for different update scenarios.
 
 export const academicFacultyValidations = {
     academicFacultyValidationSchema,

@@ -1,9 +1,9 @@
-
-import AppError from '../../errors/AppError.js';
+import AppError from '../../errors/handleAppError.js';
 import { StudentModel } from '../student/student.model.js';
 import { AcademicDept } from './academicDept.interface.js';
 import AcademicDeptModel from './academicDept.model.js';
 import mongoose from 'mongoose';
+import { paginate, parseListQuery } from '../../builder/queryBuilder.js';
 
 
 // Service function to create a new academic department
@@ -13,9 +13,19 @@ const createAcademicDeptIntoDB = async (academicDeptData: AcademicDept) => {
 }
 
 // Service function to get all academic departments
-const getAllAcademicDeptsFromDB = async () => {
-    const academicDepts = await AcademicDeptModel.find({ isDeleted: false }).populate('academicFaculty');
-    return academicDepts;
+const getAllAcademicDeptsFromDB = async (query: Record<string, unknown> = {}) => {
+    const parsed = parseListQuery(query, {
+        searchableFields: ['name'],
+    });
+    const { meta, data: academicDepts } = await paginate(AcademicDeptModel, parsed, (q) =>
+        q.populate('academicFaculty')
+    );
+    return {
+        total: meta.total,
+        page: meta.page,
+        limit: meta.limit,
+        academicDepts,
+    };
 }
 
 // get single department by id

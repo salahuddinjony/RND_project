@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import catchAsync from "../../utils/CatchAsync.js";
 import { AcademicSemesterService } from "./academicSemester.service.js";
 import sendResponse from "../../utils/response/responseSend.js";
-import AppError from "../../errors/AppError.js";
+import AppError from "../../errors/handleAppError.js";
 import { checkCommonValidation } from "../../utils/checkCommonValidation.js";
 
 //  create semester-POST
@@ -22,7 +22,8 @@ const createSemester = catchAsync(async (req: Request, res: Response, next: Next
 )
 // get all semesters-GET
 const getAllSemesters = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await AcademicSemesterService.getAllSemestersFromDB()
+    const query = req.query
+    const result = await AcademicSemesterService.getAllSemestersFromDB(query)
     if (result) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,

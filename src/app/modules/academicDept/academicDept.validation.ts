@@ -9,7 +9,9 @@ const CreateAcademicDept = z.object({
 })
 
 // Validation schema for updating an existing academic department
-const UpdateAcademicDept = CreateAcademicDept.partial(); // This allows for partial updates, meaning that when updating an academic department, you can provide any subset of the fields defined in the original validation schema, making it flexible for different update scenarios.
+const UpdateAcademicDept = CreateAcademicDept.partial().strict().refine((data) => Object.keys(data).length > 0, {
+    message: 'Provide at least one valid field to update',
+});  // This allows for partial updates, meaning that when updating an academic department, you can provide any subset of the fields defined in the original validation schema, making it flexible for different update scenarios.
 export const academicDeptValidation = {
     CreateAcademicDept,
     UpdateAcademicDept

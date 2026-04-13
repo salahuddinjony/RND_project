@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, RequestHandler } from 'express'
-import AppError from '../errors/AppError.js'
+import AppError from '../errors/handleAppError.js'
 
 const catchAsync = (fn: RequestHandler): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {

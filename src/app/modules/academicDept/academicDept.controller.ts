@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import AppError from '../../errors/AppError.js'
+import AppError from '../../errors/handleAppError.js'
 import sendResponse from '../../utils/response/responseSend.js'
 import catchAsync from '../../utils/CatchAsync.js'
 import { checkCommonValidation } from '../../utils/checkCommonValidation.js'
@@ -22,7 +22,8 @@ const createAcademicDept = catchAsync(async (req: Request, res: Response, next: 
 
 // get all academic departments-GET
 const getAllAcademicDepts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await AcademicDeptService.getAllAcademicDeptsFromDB()
+    const query = req.query
+    const result = await AcademicDeptService.getAllAcademicDeptsFromDB(query)
     if (result) { // Check if result is not null or undefined
         sendResponse(res, {
             statusCode: 200,

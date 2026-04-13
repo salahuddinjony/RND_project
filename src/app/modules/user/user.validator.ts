@@ -23,7 +23,10 @@ const updateUserValidationSchema = z.object({
     }).optional(),
     isDeleted: z.boolean().optional(),
     status: z.enum(['in-progress', 'active', 'inactive', 'pending', 'blocked']).optional(),
-});
+}).partial()
+    .strict().refine((data) => Object.keys(data).length > 0, {
+        message: 'Provide at least one valid field to update',
+    });
 
 export const userValidations = {
     createUserValidationSchema,

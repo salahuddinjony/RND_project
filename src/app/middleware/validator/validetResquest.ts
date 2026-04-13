@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
-import AppError from '../../errors/AppError.js'
+import AppError from '../../errors/handleAppError.js'
 // middleware to log incoming requests for debugging
 
 const validation = (schema: z.ZodTypeAny) => {
