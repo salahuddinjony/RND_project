@@ -1,4 +1,6 @@
 import AppError from '../../errors/handleAppError.js';
+import { applyExcludeFields } from '../../utils/excludeFiledWhenCreateResponse.js';
+import { restrictUpdateFieldsChecker } from '../../utils/restrictedUpdateFiled.js';
 import { monthEnum, semesterCodeEnum, semesterNameEnum } from './academicSemester.constant.js';
 import { AcademicSemester } from './academicSemester.interface.js';
 import { Schema, model } from 'mongoose';
@@ -48,6 +50,11 @@ const AcademicSemesterSchema = new Schema<AcademicSemester>({
 }, {
     timestamps: true
 });
+// Exclude password and isDeleted fields when converting to JSON
+applyExcludeFields<AcademicSemester>(AcademicSemesterSchema, ['isDeleted']);
+
+// pre hook to restrict updating the isDeleted field in the AcademicSemester schema for the specified update methods.
+// restrictUpdateFieldsChecker(AcademicSemesterSchema, undefined, ["isDeleted"]); // This will restrict updating the isDeleted field in the AcademicSemester schema for the specified update methods.
 
 
 // pree hook to check if the semester with the same name and year already exists before saving a new semester
@@ -61,22 +68,6 @@ AcademicSemesterSchema.pre('save', async function () {
     });
     if (existingSemester) {
         throw new Error('Academic semester with the same name and year already exists');
-    }
-});
-AcademicSemesterSchema.pre('findOneAndUpdate', function () {
-
-    const update = this.getUpdate() as any;
-
-    const restrictedFields = ['isDeleted'];
-
-    for (const field of restrictedFields) {
-
-        if (
-            update?.[field] !== undefined ||
-            update?.$set?.[field] !== undefined
-        ) {
-            throw new Error(`${field} field cannot be updated`);
-        }
     }
 });
 export const AcademicSemesterModel = model<AcademicSemester>('AcademicSemester', AcademicSemesterSchema);

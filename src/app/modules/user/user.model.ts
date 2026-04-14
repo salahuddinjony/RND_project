@@ -3,6 +3,8 @@ import { User } from './user.interface.js';
 import { timeStamp } from 'console';
 import bcrypt from 'bcrypt';
 import config from '../../config/index.js';
+import { applyExcludeFields } from '../../utils/excludeFiledWhenCreateResponse.js';
+import { restrictUpdateFieldsChecker } from '../../utils/restrictedUpdateFiled.js';
 // Define the User schema using Mongoose, which represents the structure of the user documents in the MongoDB database. The schema includes fields for id, password, needsPasswordReset, role, isDeleted, and status, along with their respective data types, validation rules, and default values. Additionally, it includes timestamps to automatically track when each user document is created and last updated.
 export const userSchema = new Schema<User>({
     id: {
@@ -26,7 +28,7 @@ export const userSchema = new Schema<User>({
             message: 'Role must be one of admin, student, or faculty'
 
         },
-     
+
     },
     isDeleted: {
         type: Boolean,
@@ -45,6 +47,10 @@ export const userSchema = new Schema<User>({
     timestamps: true
 }
 );
+
+// Exclude password and isDeleted fields when converting to JSON
+applyExcludeFields<User>(userSchema, ['password', 'isDeleted']);
+
 //pre hook for save method, this will run before saving data to the database, we can use this to perform any necessary operations or validations before the data is actually saved. In this case, it simply logs the document being saved and a message indicating that the hook is running.
 userSchema.pre('save', async function () {
     //hash password before saving to database
@@ -55,22 +61,8 @@ userSchema.pre('save', async function () {
     }
     // console.log(this, 'Hook before saving data') 
 })
-userSchema.pre('findOneAndUpdate', function () {
+restrictUpdateFieldsChecker(userSchema, undefined, ["password"]); // This will restrict updating the isDeleted and email fields in the Student schema for the specified update methods.
 
-    const update = this.getUpdate() as any;
-
-    const restrictedFields = ['isDeleted'];
-
-    for (const field of restrictedFields) {
-
-        if (
-            update?.[field] !== undefined ||
-            update?.$set?.[field] !== undefined
-        ) {
-            throw new Error(`${field} field cannot be updated`);
-        }
-    }
-});
 
 //post hook for save method, this will run after saving data to the database, we can use this to perform any necessary operations or actions after the data has been saved. In this case, it simply logs the document that was saved and a message indicating that the hook has completed.
 userSchema.post('save', function (doc) {

@@ -6,7 +6,7 @@ import { z } from 'zod';
 const CreateAcademicDept = z.object({
     name: z.string().min(1, 'Academic department name is required'), // Ensure that the name field is a non-empty string, providing a clear error message if the validation fails.
     academicFaculty: z.string(" Academic faculty ID is required")
-})
+}).strict()
 
 // Validation schema for updating an existing academic department
 const UpdateAcademicDept = CreateAcademicDept.partial().strict().refine((data) => Object.keys(data).length > 0, {

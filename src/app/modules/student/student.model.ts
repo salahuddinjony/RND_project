@@ -1,8 +1,10 @@
-import { Schema, model, connect } from 'mongoose';
+import { Schema, model, Query } from 'mongoose';
 import { guradian, localGuardian, Student, userName } from './student.interface.js';
 import validator from 'validator' // Importing the validator library to use its functions for validating input data, such as checking if a string is a valid email address or if it contains only letters.
 import bcrypt from 'bcrypt' // Importing the bcrypt library to use its functions for hashing passwords, which is a common practice for securely storing user passwords in a database.
 import config from '../../config/index.js'
+import { applyExcludeFields } from '../../utils/excludeFiledWhenCreateResponse.js';
+import { restrictUpdateFieldsChecker } from '../../utils/restrictedUpdateFiled.js';
 // import { config } from 'zod/v4/core';
 // import { number } from 'joi';
 
@@ -151,13 +153,13 @@ const studentSchema = new Schema<Student>({
         required: [true, 'Local guardian information is required']
     },
     profileImage: { type: String },
-    admissionSemester: { 
+    admissionSemester: {
         type: Schema.Types.ObjectId,
-         ref: 'AcademicSemester', 
-         required: [true, 'Admission semester is required'],
-         unique: false // This field does not need to be unique since multiple students can be admitted in the same semester, so we set unique to false to allow for duplicate values in this field.
-        },
-    academicDept: { type: Schema.Types.ObjectId, ref: 'AcademicDept', required: [true, 'Academic department is required'] },    
+        ref: 'AcademicSemester',
+        required: [true, 'Admission semester is required'],
+        unique: false // This field does not need to be unique since multiple students can be admitted in the same semester, so we set unique to false to allow for duplicate values in this field.
+    },
+    academicDept: { type: Schema.Types.ObjectId, ref: 'AcademicDept', required: [true, 'Academic department is required'] },
     isDeleted: { type: Boolean, default: false, select: false } // This field will be used to mark a student as deleted without actually removing the document from the database, which allows for soft deletion and easier data recovery if needed.
 }, {
     timestamps: true, // This will automatically add createdAt and updatedAt fields to the schema
@@ -165,6 +167,9 @@ const studentSchema = new Schema<Student>({
         virtuals: true,
     }
 });
+
+// Exclude password and isDeleted fields when converting to JSON
+applyExcludeFields<Student>(studentSchema, ['isDeleted']);
 
 //virtual for full name, this will allow us to get the full name of the student by concatenating the first name, middle name (if it exists), and last name. This is useful for displaying the student's full name in API responses or in the user interface without having to store it as a separate field in the database.
 studentSchema.virtual('fullName').get(function (this: any) {
@@ -188,22 +193,7 @@ studentSchema.post('save', function (doc, next) {
 })
 
 //for update hooks, we can use pre and post hooks for findOneAndUpdate method, this will run before and after updating data in the database, we can use this to perform any necessary operations or validations before and after the data is updated. In this case, it simply logs the document being updated and a message indicating that the hook is running.
-studentSchema.pre('findOneAndUpdate', function () {
-
-    const update = this.getUpdate() as any;
-
-    const restrictedFields = ['email', 'isDeleted'];
-
-    for (const field of restrictedFields) {
-
-        if (
-            update?.[field] !== undefined ||
-            update?.$set?.[field] !== undefined
-        ) {
-            throw new Error(`${field} field cannot be updated`);
-        }
-    }
-});
+restrictUpdateFieldsChecker(studentSchema, undefined, ["email"]); // This will restrict updating the isDeleted and email fields in the Student schema for the specified update methods.
 
 // post hook for findOneAndUpdate method, this will run after updating data in the database, we can use this to perform any necessary operations or actions after the data has been updated. In this case, it simply logs the document that was updated and a message indicating that the hook has completed.
 studentSchema.post('findOneAndUpdate', function () {

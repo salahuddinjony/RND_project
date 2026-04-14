@@ -1,8 +1,9 @@
 
-
 // AcademicDept schema implementation
-import { Schema, model} from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { AcademicDept } from './academicDept.interface.js';
+import { applyExcludeFields } from '../../utils/excludeFiledWhenCreateResponse.js';
+import { restrictUpdateFieldsChecker } from '../../utils/restrictedUpdateFiled.js';
 
 const academicDeptSchema = new Schema<AcademicDept>({
     name: { type: String, required: true },
@@ -11,10 +12,19 @@ const academicDeptSchema = new Schema<AcademicDept>({
         ref: 'AcademicFaculty',
         required: true
     },
-    isDeleted: { type: Boolean, default: false,select: false }
+    isDeleted: { type: Boolean, default: false, select: false }
 }, {
     timestamps: true
 });
+
+// Exclude password and isDeleted fields when converting to JSON
+applyExcludeFields<AcademicDept>(academicDeptSchema, ['isDeleted']);
+
+
+// pre hook to restrict updating the isDeleted field in the AcademicDept schema for the specified update methods.
+
+// restrictUpdateFieldsChecker(academicDeptSchema, undefined, ["isDeleted"]); // This will restrict updating the isDeleted and facultyId fields in the AcademicFaculty schema for the specified update methods.
+
 
 // pre save hook to ensure that the academic faculty reference is valid before saving a department also check name is unique within the same faculty
 academicDeptSchema.pre('save', async function (next) {
@@ -37,7 +47,7 @@ academicDeptSchema.pre('save', async function (next) {
             name: this.name,
             academicFaculty: academicFacultyId,
             isDeleted: false,
-            _id: { $ne: this._id } 
+            _id: { $ne: this._id }
         });
 
         if (existingDept) {
@@ -61,12 +71,12 @@ academicDeptSchema.pre('findOneAndUpdate', async function (next) {
             throw new Error('isDeleted field cannot be updated from this endpoint');
         }
 
-        if (academicFacultyId) { 
+        if (academicFacultyId) {
             // Check if faculty exists 
             const AcademicFacultyModel = model('AcademicFaculty');
             const facultyExists = await AcademicFacultyModel.exists({
                 _id: academicFacultyId,
-                isDeleted: false 
+                isDeleted: false
             });
 
             if (!facultyExists) {
@@ -80,14 +90,14 @@ academicDeptSchema.pre('findOneAndUpdate', async function (next) {
                 name: updateData.name,
                 academicFaculty: academicFacultyId,
                 isDeleted: false,
-                _id: { $ne: this.getQuery()._id } 
+                _id: { $ne: this.getQuery()._id }
             });
 
             if (existingDept) {
                 throw new Error('A department with the same name already exists within the same faculty');
             }
         }
-       
+
     } catch (error) {
         throw new Error('Invalid academic faculty reference');
 
