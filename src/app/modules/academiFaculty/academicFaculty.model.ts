@@ -1,5 +1,7 @@
 import { Schema, model } from 'mongoose'
 import { AcademicFaculty } from './academicFaculty.interface.js'
+import { applyExcludeFields } from '../../utils/excludeFiledWhenCreateResponse.js';
+import { restrictUpdateFieldsChecker } from '../../utils/restrictedUpdateFiled.js';
 const academicFaultySchema = new Schema<AcademicFaculty>({
     facultyId: {
         type: String,
@@ -19,22 +21,29 @@ const academicFaultySchema = new Schema<AcademicFaculty>({
 }, {
     timestamps: true
 })
-academicFaultySchema.pre('findOneAndUpdate', function () {
 
-    const update = this.getUpdate() as any;
+// Exclude password and isDeleted fields when converting to JSON
+applyExcludeFields<AcademicFaculty>(academicFaultySchema, ['isDeleted']);
 
-    const restrictedFields = ['isDeleted', 'facultyId'];
+restrictUpdateFieldsChecker(academicFaultySchema, undefined, ["facultyId"]); // This will restrict updating the isDeleted and facultyId fields in the AcademicFaculty schema for the specified update methods.
 
-    for (const field of restrictedFields) {
 
-        if (
-            update?.[field] !== undefined ||
-            update?.$set?.[field] !== undefined
-        ) {
-            throw new Error(`${field} field cannot be updated`);
-        }
-    }
-});
+// academicFaultySchema.pre('findOneAndUpdate', function () {
+
+//     const update = this.getUpdate() as any;
+
+//     const restrictedFields = ['isDeleted', 'facultyId'];
+
+//     for (const field of restrictedFields) {
+
+//         if (
+//             update?.[field] !== undefined ||
+//             update?.$set?.[field] !== undefined
+//         ) {
+//             throw new Error(`${field} field cannot be updated`);
+//         }
+//     }
+// });
 
 const AcademicFacultyModel = model<AcademicFaculty>('AcademicFaculty', academicFaultySchema)
 

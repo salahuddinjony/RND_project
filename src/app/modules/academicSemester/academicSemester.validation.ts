@@ -18,7 +18,7 @@ const academicSemesterValidationSchema = z.object({
     endMonth: z.enum([...monthEnum], {
         message: 'End month must be a valid month',
     })
-});
+}).strict();
 
 // For update, all fields are optional
 const updateAcademicSemesterValidationSchema = academicSemesterValidationSchema.partial().strict().refine((data) => Object.keys(data).length > 0, {
