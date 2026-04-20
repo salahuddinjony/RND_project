@@ -6,6 +6,7 @@ import { Auth } from "./auth.interface.js";
 import { UserInterface } from "../user/user.interface.js";
 import bcrypt from "bcrypt";
 import type { Types } from "mongoose";
+import { sendMail } from "../../utils/sendMail.js";
 
 const authLoginIntoDB = async (authData: Auth) => {
   const { id, password } = authData;
@@ -92,32 +93,77 @@ const refreshTokenIntoDB = async (refreshToken: string) => {
 };
 // forget password
 const forgetPasswordIntoDB = async (id: string) => {
-  const isValidUser = await UserModel.isUserIdValid(
-    id,
-    undefined,
-    false,
-    false,
-  );
-  if (!isValidUser) {
+  const user = await UserModel.isUserIdValid(id, undefined, false, false);
+  if (!user) {
     throw new AppError("User not found", 404);
   }
-  if (isValidUser.status !== "active") {
+  if (user.status !== "active") {
     throw new AppError("User is not active, please contact admin", 401);
   }
+  // console.log(isValidUser);
   // generate token
-  const resetPasswordToken = jwt.sign({ isValidUser }, config.JWT_SECRET, {
+  const resetPasswordToken = jwt.sign({ user }, config.JWT_SECRET, {
     expiresIn: "5m",
   } as SignOptions);
 
+  const name = user.email?.split("@")[0] || user.id;
+
   const url = `${config.FRONTEND_URL}/reset-password?id=${id}&token=${resetPasswordToken}`;
+
+  try {
+    // send email to user by using sendMail function of Nodemailer
+    await sendMail(user.email as string, "Reset Password", name as string, url);
+  } catch {
+    throw new AppError(
+      "Unable to send reset email right now. Please check your email is valid",
+      503,
+    );
+  }
   return {
-    url: url,
     expiresIn: "5m",
+    mailSent: true,
   };
 };
+// reset password
+const resetPasswordIntoDB = async (
+  payload: {
+    id: string;
+    newPassword: string;
+  },
+  idFromToken: string,
+) => {
+  const { id, newPassword } = payload;
+  console.log(idFromToken, id);
+
+  // check if the given user id is the same as the user id from the token
+  if (idFromToken !== id) {
+    throw new AppError("Invalid Given User ID", 401);
+  }
+
+  const isValidUser: Partial<UserInterface> & {
+    _id?: Types.ObjectId | string;
+  } = await UserModel.isUserIdValid(id, undefined, false, false);
+  if (!isValidUser) {
+    throw new AppError("User not found", 404);
+  }
+  const hashedNewPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.BCRYPT_SALT_ROUNDS),
+  );
+  await UserModel.findByIdAndUpdate(isValidUser._id, {
+    password: hashedNewPassword,
+    needsPasswordReset: false,
+    passwordChangedAt: new Date(),
+  });
+  return {
+    message: "Password reset successfully",
+  };
+};
+
 export const AuthService = {
   authLoginIntoDB,
   changePasswordIntoDB,
   refreshTokenIntoDB,
   forgetPasswordIntoDB,
+  resetPasswordIntoDB,
 };

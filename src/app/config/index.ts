@@ -20,4 +20,14 @@ export default {
     (process.env.JWT_REFRESH_EXPIRES_IN as string) || "7d",
   DOMAIN: process.env.DOMAIN as string,
   FRONTEND_URL: process.env.FRONTEND_URL as string,
+  SMTP_HOST: (process.env.SMTP_HOST as string) || "smtp.gmail.com",
+  SMTP_PORT: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587,
+  SMTP_SECURE: process.env.SMTP_SECURE === "true",
+  SMTP_FAMILY: process.env.SMTP_FAMILY
+    ? parseInt(process.env.SMTP_FAMILY, 10)
+    : 4,
+  SMTP_USER: process.env.SMTP_USER as string,
+  SMTP_PASS: process.env.SMTP_PASS as string,
+  EMAIL_USER: process.env.EMAIL_USER as string,
+  EMAIL_APP_NAME: process.env.EMAIL_APP_NAME as string,
 };

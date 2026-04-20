@@ -19,6 +19,12 @@ const facultySchema = new Schema<Faculty>(
       required: [true, "Faculty email is required"],
       unique: [true, "Faculty email must be unique"],
     },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Faculty user is required"],
+      unique: [true, "Faculty user must be unique"],
+    },
     experience: {
       type: Number,
       required: [true, "Faculty experience is required"],
@@ -65,12 +71,6 @@ const facultySchema = new Schema<Faculty>(
     permanentAddress: {
       type: String,
       required: [true, "Faculty permanent address is required"],
-    },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Faculty user is required"],
-      unique: [true, "Faculty user must be unique"],
     },
     isDeleted: {
       type: Boolean,

@@ -9,28 +9,28 @@ const router = express.Router();
 
 router.post(
   "/create-faculty",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validation(facultyValidations.createFacultyPayloadSchema),
   FacultyController.createFaculty,
 );
 
 router.get(
   "/get-all-faculties",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   FacultyController.getAllFaculties,
 );
 router.get("/get-faculty/:id", FacultyController.getFacultyById);
 
 router.patch(
   "/update-faculty/:id",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validation(facultyValidations.updateFacultyValidationSchema),
   FacultyController.updateFacultyById,
 );
 
 router.delete(
   "/delete-faculty/:id",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   FacultyController.deleteFacultyById,
 );
 

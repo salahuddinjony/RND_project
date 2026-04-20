@@ -15,7 +15,9 @@ const getAllAdminsFromDB = async (query: Record<string, unknown> = {}) => {
   const parsed = parseListQuery(query, {
     searchableFields: ["name", "email"],
   });
-  const { meta, data: admins } = await paginate(AdminModel, parsed);
+  const { meta, data: admins } = await paginate(AdminModel, parsed, (q) =>
+    q.populate("user"),
+  );
   return { meta, admins };
 };
 
