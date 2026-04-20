@@ -14,27 +14,27 @@ const router = express.Router();
 // Get all students
 router.get(
   "/get-all-students",
-  authorizationValidate(UserRole.STUDENT),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.FACULTY),
   StudentController.getAllStudents,
 );
 // Get all deleted students
 router.get(
   "/get-all-deleted-students",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   StudentController.getAllDeletedStudents,
 );
 
 // Get student by ID
 router.get(
   "/get-student/:id",
-  authorizationValidate(UserRole.STUDENT),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.FACULTY),
   StudentController.getStudentById,
 );
 
 // update student info
 router.patch(
   "/update-student/:id",
-  authorizationValidate(UserRole.STUDENT),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.FACULTY),
   validation(studentValidation.updateStudentValidationSchema),
   StudentController.updateStudentInfo,
 );
@@ -42,14 +42,14 @@ router.patch(
 //delete student
 router.delete(
   "/delete-student/:id",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.FACULTY),
   StudentController.deleteStudent,
 );
 
 // restore deleted students
 router.patch(
   "/restore-deleted-students",
-  authorizationValidate(UserRole.ADMIN),
+  authorizationValidate(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   StudentController.restoreDeletedStudents,
 );
 

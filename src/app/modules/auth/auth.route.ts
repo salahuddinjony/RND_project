@@ -38,4 +38,17 @@ router.post(
   validation(AuthValidation.forgetPasswordValidation),
   AuthController.forgetPassword,
 );
+//reset password
+router.post(
+  "/reset-password",
+  authorizationValidate(
+    UserRole.STUDENT,
+    UserRole.FACULTY,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  ),
+  validation(AuthValidation.resetPasswordValidation),
+  AuthController.resetPassword,
+);
+
 export const AuthRoute = router;

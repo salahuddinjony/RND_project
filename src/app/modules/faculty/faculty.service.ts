@@ -25,7 +25,8 @@ const getAllFacultiesFromDB = async (query: Record<string, unknown> = {}) => {
     baseFilter: { isDeleted: false },
   });
 
-  const { meta, data } = await paginate(FacultyModel, parsed);
+  const { meta, data } = await paginate(FacultyModel, parsed,(q) =>
+    q.populate("user"));
   return { meta, faculties: data };
 };
 

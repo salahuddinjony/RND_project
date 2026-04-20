@@ -107,7 +107,7 @@ userSchema.statics.isUserIdValid = async function (
   checkIsBlocked: boolean = true,
 ): Promise<Partial<UserInterface>> {
   const user = await UserModel.findOne({ id, isDeleted: false }).select(
-    "+password status role needsPasswordReset id passwordChangedAt",
+    "+password status role needsPasswordReset id passwordChangedAt email",
   );
 
   if (!user) {

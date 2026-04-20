@@ -31,17 +31,36 @@ const refreshTokenValidation = z.object({
       message: "Refresh token is required",
     }),
 });
-// 
-const forgetPasswordValidation = z.object({
-  id: z.string().min(1, {
-    message: "User ID is required",
-  }),
-}).strict().refine((data) => Object.keys(data).length > 0, {
-  message: "Provide at least one valid field to forget password",
-});
+//
+const forgetPasswordValidation = z
+  .object({
+    id: z.string().min(1, {
+      message: "User ID is required",
+    }),
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Provide at least one valid field to forget password",
+  });
+
+// reset password validation
+const resetPasswordValidation = z
+  .object({
+    id: z.string().min(1, {
+      message: "User ID is required",
+    }),
+    newPassword: z.string().min(6, {
+      message: "New password must be at least 6 characters long",
+    }),
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Provide at least one valid field to reset password",
+  });
 export const AuthValidation = {
   authLoginValidation,
   changePasswordValidation,
   refreshTokenValidation,
   forgetPasswordValidation,
+  resetPasswordValidation,
 };

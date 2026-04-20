@@ -8,6 +8,7 @@ import config from "../../config/index.js";
 const authLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await AuthService.authLoginIntoDB(req.body);
+
     // set in the cookie
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
@@ -35,17 +36,18 @@ const authLogin = catchAsync(
 const changePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await AuthService.changePasswordIntoDB(req.user, req.body);
-   if (result) {
-    sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: "Password changed successfully",
-      data: result,
-    });
-   } else {
-    next(new AppError("Invalid credentials", 401));
-   }
-  });
+    if (result) {
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Password changed successfully",
+        data: result,
+      });
+    } else {
+      next(new AppError("Invalid credentials", 401));
+    }
+  },
+);
 
 // refresh token
 const refreshToken = catchAsync(
@@ -69,13 +71,13 @@ const refreshToken = catchAsync(
 // forget password
 const forgetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-   
     const result = await AuthService.forgetPasswordIntoDB(req.body.id);
     if (result) {
       sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: "Password forgotten successfully, please check your email for the reset password link",
+        message:
+          "Password forgotten successfully, please check your email for the reset password link",
         data: result,
       });
     } else {
@@ -83,9 +85,28 @@ const forgetPassword = catchAsync(
     }
   },
 );
+// reset password
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const idFromToken = req.user.id as string;
+    const result = await AuthService.resetPasswordIntoDB(req.body, idFromToken);
+    if (result) {
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Password reset successfully",
+        // data: result,
+      });
+    } else {
+      next(new AppError("Invalid credentials", 401));
+    }
+  },
+);
+
 export const AuthController = {
   authLogin,
   changePassword,
   refreshToken,
   forgetPassword,
+  resetPassword,
 };

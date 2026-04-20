@@ -2,7 +2,7 @@ import { Student } from "../student/student.interface.js";
 import { StudentModel } from "../student/student.model.js";
 import { UserInterface } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
-import mongoose, { UpdateQuery } from "mongoose";
+import mongoose, { UpdateQuery, Types } from "mongoose";
 import AppError from "../../errors/handleAppError.js";
 import { UserUtils } from "./user.utils.js";
 import { paginate, parseListQuery } from "../../builder/queryBuilder.js";
@@ -14,6 +14,7 @@ import { Faculty } from "../faculty/faculty.interface.js";
 import { FacultyModel } from "../faculty/faculty.model.js";
 import { Admin } from "../admin/admin.interface.js";
 import AdminModel from "../admin/admin.model.js";
+import { UserRole } from "./user.constant.js";
 
 // Service function to create a user in the database
 const createStudentIntoDB = async (password: string, StudentData: Student) => {
@@ -336,6 +337,37 @@ const restoreDeletedUsersInDB = async () => {
     await session.endSession();
   }
 };
+
+// get my profile from database
+const getMyProfileFromDB = async (
+  user: UserInterface & { _id?: Types.ObjectId | string },
+) => {
+  let result;
+  if (user.role === UserRole.STUDENT) {
+    result = await StudentModel.findOne({
+      user: user._id as Types.ObjectId,
+    })
+      .populate("user")
+      .populate("admissionSemester")
+      .populate("academicDept")
+      .populate({
+        path: "academicDept",
+        populate: {
+          path: "academicFaculty",
+        },
+      });
+  } else if (user.role === UserRole.FACULTY) {
+    result = await FacultyModel.findOne({
+      user: user._id as Types.ObjectId,
+    }).populate("user");
+  } else if (user.role === UserRole.ADMIN) {
+    result = await AdminModel.findOne({
+      user: user._id as Types.ObjectId,
+    }).populate("user");
+  }
+  return result;
+};
+
 export const UserService = {
   createStudentIntoDB,
   createFacultyIntoDB,
@@ -346,4 +378,5 @@ export const UserService = {
   deleteUserFromDB,
   getAllDeletedUsersFromDB,
   restoreDeletedUsersInDB,
+  getMyProfileFromDB,
 };
