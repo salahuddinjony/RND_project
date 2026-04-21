@@ -11,7 +11,7 @@ const createFacultyValidationSchema = z
     emergencyContactNo: z
       .string()
       .min(1, "Faculty emergency contact number is required"),
-    profileImage: z.string().optional(),
+    // profileImage: z.string().optional(),
     gender: z.enum(["male", "female", "other"], { message: "Invalid gender" }),
     dateOfBirth: z.coerce.date({ message: "Invalid date of birth" }),
     bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], {
@@ -30,36 +30,25 @@ const createFacultyPayloadSchema = z
     password: z
       .string()
       .refine((val) => val.trim() === "" || val.length >= 6, {
-        message: "Password must be at least 6 characters, or use an empty string for the default password",
+        message:
+          "Password must be at least 6 characters, or use an empty string for the default password",
       })
       .optional(),
     facultyData: createFacultyValidationSchema,
   })
   .strict();
 
+const facultyUpdateDataSchema = createFacultyValidationSchema
+  .partial()
+  .extend({
+    name: userNameValidationSchema.partial().strict().optional(),
+  })
+  .strict();
+
 //update faculty validation schema
 const updateFacultyValidationSchema = z
   .object({
-    name: userNameValidationSchema.optional(),
-    experience: z
-      .number()
-      .min(0, "Faculty experience must be greater than 0")
-      .optional(),
-    designation: z.string().optional(),
-    contactNo: z.string().optional(),
-    emergencyContactNo: z.string().optional(),
-    profileImage: z.string().optional(),
-    gender: z
-      .enum(["male", "female", "other"], { message: "Invalid gender" })
-      .optional(),
-    dateOfBirth: z.date({ message: "Invalid date of birth" }).optional(),
-    bloodGroup: z
-      .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], {
-        message: "Invalid blood group",
-      })
-      .optional(),
-    presentAddress: z.string().optional(),
-    permanentAddress: z.string().optional(),
+    faculty: facultyUpdateDataSchema,
   })
   .strict();
 export const facultyValidations = {
