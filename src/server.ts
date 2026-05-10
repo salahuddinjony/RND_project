@@ -11,8 +11,10 @@ let myServer: Server | undefined;
 // Connect to MongoDB
 async function initializeDatabase() {
   try {
+    // connect to MongoDB
     await connectToDatabase();
     console.log("Connected to MongoDB");
+    // seed super admin
     await seedSuperAdmin();
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
